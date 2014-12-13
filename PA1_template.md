@@ -1,15 +1,11 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
+# Reproducible Research: Peer Assessment 1
 
 ## Global Settings
 
 Show all code and results
 
-```{r setoptions}
+
+```r
 library(knitr)
 opts_chunk$set(echo=TRUE, results="show")
 options(scipen=1, digits=2)
@@ -20,7 +16,8 @@ options(scipen=1, digits=2)
 
 Check if "activity" folder exists; if not, download and unzip it
 
-```{r download}
+
+```r
 if (!file.exists("activity.csv")) 
     {url <- "http://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip"
     zipfile <- "activity.zip"
@@ -30,9 +27,21 @@ if (!file.exists("activity.csv"))
 
 Load and summarise data
 
-```{r load}
+
+```r
 activity <- read.csv(file="activity.csv", header=TRUE)
 summary(activity)
+```
+
+```
+##      steps              date          interval   
+##  Min.   :  0    2012-10-01:  288   Min.   :   0  
+##  1st Qu.:  0    2012-10-02:  288   1st Qu.: 589  
+##  Median :  0    2012-10-03:  288   Median :1178  
+##  Mean   : 37    2012-10-04:  288   Mean   :1178  
+##  3rd Qu.: 12    2012-10-05:  288   3rd Qu.:1766  
+##  Max.   :806    2012-10-06:  288   Max.   :2355  
+##  NA's   :2304   (Other)   :15840
 ```
 
 
@@ -40,7 +49,8 @@ summary(activity)
 
 Reshape data to calculate total number of steps per day and remove NA values
 
-```{r stepsreshape}
+
+```r
 library(plyr)
 activityclean <- na.omit(activity) 
 activity2<- ddply(activityclean, "date", summarise, total.steps=sum(steps))
@@ -48,21 +58,25 @@ activity2<- ddply(activityclean, "date", summarise, total.steps=sum(steps))
 
 Plot total number of steps per day
 
-```{r stepsplot}
+
+```r
 library(ggplot2)
 ggplot(data=activity2, aes(x=date, y=total.steps)) + 
       geom_histogram(stat="identity") + xlab("Date") + ylab("Total Steps") + 
       ggtitle("Total Steps Per Day")
 ```
 
+![](./PA1_template_files/figure-html/stepsplot-1.png) 
+
 Calculate mean and median steps per day
 
-```{r steps}
+
+```r
 meansteps <- mean(activity2$total.steps)
 mediansteps <- median(activity2$total.steps)
 ```
 
-**The mean total steps per day is `r meansteps` and the median is `r mediansteps`.**  
+**The mean total steps per day is 10766.19 and the median is 10765.**  
 
 
 ## What is the average daily activity pattern?
@@ -70,36 +84,42 @@ mediansteps <- median(activity2$total.steps)
 Reshape data to show average number of steps for each interval across all days
 Plot average steps for each interval
 
-```{r interval}
+
+```r
 activity3 <- ddply(activityclean, "interval", summarise, mean.steps=mean(steps))
 plot(activity3$interval, activity3$mean.steps, type="l", 
      main="Average Steps Per Interval", xlab="Interval", ylab="Average Steps")
 ```
 
+![](./PA1_template_files/figure-html/interval-1.png) 
+
 Identify interval with the most number of steps on average across all days
 
-```{r interval 2}
+
+```r
 maxsteps <- max(activity3$mean.steps)
 rowinterval <- which(activity3$mean.steps==maxsteps)
 maxinterval <- activity3[rowinterval, 1]
 ```
 
-**The interval with the most number of average steps is `r maxinterval`.**  
+**The interval with the most number of average steps is 835.**  
 
 
 ## Imputing missing values
 
 Calculate and report the total number of missing values in the dataset
 
-```{r missing}
+
+```r
 missing <- length(which(is.na(activity)))
 ```
 
-**There are `r missing` missing values in the dataset.**
+**There are 2304 missing values in the dataset.**
 
 Replace missing values in dataset with mean number of steps for that interval
 
-```{r replace}
+
+```r
 activityfull <- activity
 activityfull$steps <- with(activityfull,ifelse(
       is.na(steps),
@@ -110,22 +130,26 @@ activityfull$steps <- with(activityfull,ifelse(
 
 Plot total number of steps per day from new dataset
 
-```{r newstepsplot}
+
+```r
 activityfull2 <- ddply(activityfull, "date", summarise, total.steps=sum(steps))
 ggplot(data=activityfull2, aes(x=date, y=total.steps)) + 
       geom_histogram(stat="identity") + xlab("Date") + ylab("Total Steps") + 
       ggtitle("Total Steps Per Day - Full Dataset")
 ```
 
+![](./PA1_template_files/figure-html/newstepsplot-1.png) 
+
 Calculate mean and median steps per day from new dataset
 
-```{r newsteps}
+
+```r
 newmeansteps <- mean(activityfull2$total.steps)
 newmediansteps <- median(activityfull2$total.steps)
 ```
 
-**The mean total steps per day is now `r newmeansteps`, same as the previous value.**
-**But the new median steps per day is now `r newmediansteps`, compared to `r mediansteps` previously.**  
+**The mean total steps per day is now 10766.19, same as the previous value.**
+**But the new median steps per day is now 10766.19, compared to 10765 previously.**  
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
