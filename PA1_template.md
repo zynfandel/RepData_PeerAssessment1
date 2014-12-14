@@ -154,4 +154,32 @@ newmediansteps <- median(activityfull2$total.steps)
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
-```{}
+Add new factor variable for weekday or weekend
+
+
+```r
+activityposix <- activityfull
+activityposix$date <- as.Date(activityposix$date, format="%Y-%m-%d")
+activity4 <- mutate(activityposix, day=weekdays(activityposix$date))
+activity4$day <- gsub("Monday", "weekday", activity4$day)
+activity4$day <- gsub("Tuesday", "weekday", activity4$day)
+activity4$day <- gsub("Wednesday", "weekday", activity4$day)
+activity4$day <- gsub("Thursday", "weekday", activity4$day)
+activity4$day <- gsub("Friday", "weekday", activity4$day)
+activity4$day <- gsub("Saturday", "weekend", activity4$day)
+activity4$day <- gsub("Sunday", "weekend", activity4$day)
+```
+
+Split dataset into weekday and weekend data and find average steps in each interval for weekdays and weekends
+Then create panel plot of average number of steps in each interval across weekdays and weekends
+
+
+```r
+activitysplit <- ddply(activity4, .(day, interval), summarise, mean.steps=(mean(steps)))
+
+library(lattice)
+xyplot(mean.steps ~ interval | day, activitysplit, type="l", layout=c(1,2), 
+       xlab="Interval", ylab="Number of steps")
+```
+
+![](./PA1_template_files/figure-html/lattice-1.png) 
